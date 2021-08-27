@@ -1,9 +1,5 @@
 use byteorder::{ByteOrder, LittleEndian};
 
-const OP0_MASK: u32 = 0b1111;
-const OP1_MASK: u32 = 0b1111_0000_0000_0000_0000;
-const OP2_MASK: u32 = 0b1111_0000_0000_0000_0000_0000;
-
 #[derive(Debug, Clone, PartialEq)]
 pub enum Instruction {}
 
@@ -64,18 +60,18 @@ pub fn decode(input: &[u8]) -> Option<Instruction> {
     match op0 {
         0b0000 => parse_qrst(value),
         0b0001 => unimplemented!(),   // l32r
-        0b0010 => parse_lsai(value),    // lsai
+        0b0010 => parse_lsai(value),  // lsai
         0b0011 => parse_lsci(value),  // lsci
         0b0100 => parse_mac16(value), // mac16
-        0b0101 => unimplemented!(),   // calln
-        0b0110 => unimplemented!(),   // si
-        0b0111 => unimplemented!(),   // b
+        0b0101 => parse_calln(value), // calln
+        0b0110 => parse_si(value),    // si
+        0b0111 => parse_b(value),     // b
         0b1000 => unimplemented!(),   // l32i.n
         0b1001 => unimplemented!(),   // s32i.n
         0b1010 => unimplemented!(),   // add.n
         0b1011 => unimplemented!(),   // addi.n
-        0b1100 => unimplemented!(),   // st2
-        0b1101 => unimplemented!(),   // st3
+        0b1100 => parse_st2(value),   // st2
+        0b1101 => parse_st3(value),   // st3
         _ => None,
     }
 }
@@ -84,17 +80,17 @@ fn parse_qrst(value: u32) -> Option<Instruction> {
     let op1 = extract_op1(value);
 
     match op1 {
-        0b0000 => parse_rst0(value),          // rst0
-        0b0001 => unimplemented!(),          // rst1
-        0b0010 => unimplemented!(),          // rst2
-        0b0011 => unimplemented!(),          // rst3
+        0b0000 => parse_rst0(value),         // rst0
+        0b0001 => parse_rst1(value),         // rst1
+        0b0010 => parse_rst2(value),         // rst2
+        0b0011 => parse_rst3(value),         // rst3
         0b0100 | 0b0101 => unimplemented!(), // extui
         0b0110 => unimplemented!(),          // cust0
         0b0111 => unimplemented!(),          // cust1
-        0b1000 => unimplemented!(),          // lscx
-        0b1001 => unimplemented!(),          // lsc4
-        0b1010 => unimplemented!(),          // fp0
-        0b1011 => unimplemented!(),          // fp1
+        0b1000 => parse_lscx(value),         // lscx
+        0b1001 => parse_lsc4(value),         // lsc4
+        0b1010 => parse_fp0(value),          // fp0
+        0b1011 => parse_fp1(value),          // fp1
         _ => None,
     }
 }
@@ -127,17 +123,17 @@ fn parse_st0(value: u32) -> Option<Instruction> {
 
     match r {
         0b0000 => parse_snm0(value), // snm0
-        0b0001 => unimplemented!(), // movsp
+        0b0001 => unimplemented!(),  // movsp
         0b0010 => parse_sync(value), // sync
         0b0011 => parse_rfei(value), // rfei
-        0b0100 => unimplemented!(), // break
-        0b0101 => unimplemented!(), // syscall
-        0b0110 => unimplemented!(), // rsil
-        0b0111 => unimplemented!(), // waiti
-        0b1000 => unimplemented!(), // any4
-        0b1001 => unimplemented!(), // all4
-        0b1010 => unimplemented!(), // any8
-        0b1011 => unimplemented!(), // all8
+        0b0100 => unimplemented!(),  // break
+        0b0101 => unimplemented!(),  // syscall
+        0b0110 => unimplemented!(),  // rsil
+        0b0111 => unimplemented!(),  // waiti
+        0b1000 => unimplemented!(),  // any4
+        0b1001 => unimplemented!(),  // all4
+        0b1010 => unimplemented!(),  // any8
+        0b1011 => unimplemented!(),  // all8
         _ => None,
     }
 }
@@ -146,8 +142,8 @@ fn parse_snm0(value: u32) -> Option<Instruction> {
     let m = extract_m(value);
 
     match m {
-        0b00 => unimplemented!(), // ill
-        0b10 => parse_jr(value), // jr
+        0b00 => unimplemented!(),   // ill
+        0b10 => parse_jr(value),    // jr
         0b11 => parse_callx(value), // callx
         _ => None,
     }
@@ -196,8 +192,8 @@ fn parse_rfei(value: u32) -> Option<Instruction> {
 
     match t {
         0b0000 => parse_rfet(value), // rfet
-        0b0001 => unimplemented!(), // rfi
-        0b0010 => unimplemented!(), // rfme
+        0b0001 => unimplemented!(),  // rfi
+        0b0010 => unimplemented!(),  // rfme
         _ => None,
     }
 }
@@ -261,25 +257,245 @@ fn parse_rt0(value: u32) -> Option<Instruction> {
     }
 }
 
-// CONTINUE rst1
+fn parse_rst1(value: u32) -> Option<Instruction> {
+    let op2 = extract_op2(value);
+
+    match op2 {
+        0b0000 | 0b0001 => unimplemented!(), // slli
+        0b0010 | 0b0011 => unimplemented!(), // srai
+        0b0100 => unimplemented!(),          // srli
+        0b0110 => unimplemented!(),          // xsr
+        0b0111 => parse_accer(value),        // accer
+        0b1000 => unimplemented!(),          // src
+        0b1001 => unimplemented!(),          // srl
+        0b1010 => unimplemented!(),          // sll
+        0b1011 => unimplemented!(),          // sra
+        0b1100 => unimplemented!(),          // mul16u
+        0b1101 => unimplemented!(),          // mul16s
+        0b1111 => parse_imp(value),          // imp
+        _ => None,
+    }
+}
+
+fn parse_accer(value: u32) -> Option<Instruction> {
+    let op2 = extract_op2(value);
+
+    match op2 {
+        0b0000 => unimplemented!(), // rer
+        0b1000 => unimplemented!(), // wer
+        _ => None,
+    }
+}
+
+fn parse_imp(value: u32) -> Option<Instruction> {
+    let r = extract_r(value);
+
+    match r {
+        0b0000 => unimplemented!(),  // lict
+        0b0001 => unimplemented!(),  // sict
+        0b0010 => unimplemented!(),  // licw
+        0b0011 => unimplemented!(),  // sicw
+        0b1000 => unimplemented!(),  // ldct
+        0b1001 => unimplemented!(),  // sdct
+        0b1110 => parse_rfdx(value), // rfdx
+        _ => None,
+    }
+}
+
+fn parse_rfdx(value: u32) -> Option<Instruction> {
+    let t = extract_t(value);
+
+    match t {
+        0b0000 => unimplemented!(), // rfdo
+        0b0001 => unimplemented!(), // rfdd
+        _ => None,
+    }
+}
+
+fn parse_rst2(value: u32) -> Option<Instruction> {
+    let op2 = extract_op2(value);
+
+    match op2 {
+        0b0000 => unimplemented!(), // andb
+        0b0001 => unimplemented!(), // andbc
+        0b0010 => unimplemented!(), // orb
+        0b0011 => unimplemented!(), // orbc
+        0b0100 => unimplemented!(), // xorb
+        0b1000 => unimplemented!(), // mull
+        0b1010 => unimplemented!(), // muluh
+        0b1011 => unimplemented!(), // mulsh
+        0b1100 => unimplemented!(), // quou
+        0b1101 => unimplemented!(), // quos
+        0b1110 => unimplemented!(), // remu
+        0b1111 => unimplemented!(), // rems
+        _ => None,
+    }
+}
+
+fn parse_rst3(value: u32) -> Option<Instruction> {
+    let op2 = extract_op2(value);
+
+    match op2 {
+        0b0000 => unimplemented!(), // rsr
+        0b0001 => unimplemented!(), // wsr
+        0b0010 => unimplemented!(), // sext
+        0b0011 => unimplemented!(), // clamps
+        0b0100 => unimplemented!(), // min
+        0b0101 => unimplemented!(), // max
+        0b0110 => unimplemented!(), // minu
+        0b0111 => unimplemented!(), // maxu
+        0b1000 => unimplemented!(), // moveqz
+        0b1001 => unimplemented!(), // movnez
+        0b1010 => unimplemented!(), // movltz
+        0b1011 => unimplemented!(), // movgez
+        0b1100 => unimplemented!(), // movf
+        0b1101 => unimplemented!(), // movt
+        0b1110 => unimplemented!(), // rur
+        0b1111 => unimplemented!(), // wur
+        _ => None,
+    }
+}
+
+fn parse_lscx(value: u32) -> Option<Instruction> {
+    let op2 = extract_op2(value);
+
+    match op2 {
+        0b0000 => unimplemented!(), // lsx
+        0b0001 => unimplemented!(), // lsxu
+        0b0100 => unimplemented!(), // ssx
+        0b0101 => unimplemented!(), // ssxu
+        _ => None,
+    }
+}
+
+fn parse_lsc4(value: u32) -> Option<Instruction> {
+    let op2 = extract_op2(value);
+
+    match op2 {
+        0b0000 => unimplemented!(), // l32e
+        0b0100 => unimplemented!(), // s32e
+        _ => None,
+    }
+}
+
+fn parse_fp0(value: u32) -> Option<Instruction> {
+    let op2 = extract_op2(value);
+
+    match op2 {
+        0b0000 => unimplemented!(),   // add.s
+        0b0001 => unimplemented!(),   // sub.s
+        0b0010 => unimplemented!(),   // mul.s
+        0b0100 => unimplemented!(),   // madd.s
+        0b0101 => unimplemented!(),   // msub.s
+        0b1000 => unimplemented!(),   // round.s
+        0b1001 => unimplemented!(),   // trunc.s
+        0b1010 => unimplemented!(),   // floor.s
+        0b1011 => unimplemented!(),   // ceil.s
+        0b1100 => unimplemented!(),   // float.s
+        0b1101 => unimplemented!(),   // ufloat.s
+        0b1110 => unimplemented!(),   // utrunc.s
+        0b1111 => parse_fp1op(value), // fp1op
+        _ => None,
+    }
+}
+
+fn parse_fp1op(value: u32) -> Option<Instruction> {
+    let t = extract_t(value);
+
+    match t {
+        0b0000 => unimplemented!(), // mov.s
+        0b0001 => unimplemented!(), // abs.s
+        0b0100 => unimplemented!(), // rfr
+        0b0101 => unimplemented!(), // wfr
+        0b0110 => unimplemented!(), // neg.s
+        _ => None,
+    }
+}
+
+fn parse_fp1(value: u32) -> Option<Instruction> {
+    let op2 = extract_op2(value);
+
+    match op2 {
+        0b0001 => unimplemented!(), // un.s
+        0b0010 => unimplemented!(), // oeq.s
+        0b0011 => unimplemented!(), // ueq.s
+        0b0100 => unimplemented!(), // olt.s
+        0b0101 => unimplemented!(), // ult.s
+        0b0110 => unimplemented!(), // ole.s
+        0b0111 => unimplemented!(), // ule.s
+        0b1000 => unimplemented!(), // moveqz.s
+        0b1001 => unimplemented!(), // movnez.s
+        0b1010 => unimplemented!(), // movltz.s
+        0b1011 => unimplemented!(), // movgez.s
+        0b1100 => unimplemented!(), // movf.s
+        0b1101 => unimplemented!(), // movt.s
+        _ => None,
+    }
+}
+
 fn parse_lsai(value: u32) -> Option<Instruction> {
     let r = extract_r(value);
 
     match r {
-        0b0000 => unimplemented!(), // l8ui
-        0b0001 => unimplemented!(), // l16ui
-        0b0010 => unimplemented!(), // l32i
-        0b0100 => unimplemented!(), // s8i
-        0b0101 => unimplemented!(), // s16i
-        0b0110 => unimplemented!(), // s32i
-        0b0111 => unimplemented!(), // cache
-        0b1001 => unimplemented!(), // l16si
-        0b1010 => unimplemented!(), // movi
-        0b1011 => unimplemented!(), // l32ai
-        0b1100 => unimplemented!(), // addi
-        0b1101 => unimplemented!(), // addmi
-        0b1110 => unimplemented!(), // s32c1i
-        0b1111 => unimplemented!(), // s32rl
+        0b0000 => unimplemented!(),   // l8ui
+        0b0001 => unimplemented!(),   // l16ui
+        0b0010 => unimplemented!(),   // l32i
+        0b0100 => unimplemented!(),   // s8i
+        0b0101 => unimplemented!(),   // s16i
+        0b0110 => unimplemented!(),   // s32i
+        0b0111 => parse_cache(value), // cache
+        0b1001 => unimplemented!(),   // l16si
+        0b1010 => unimplemented!(),   // movi
+        0b1011 => unimplemented!(),   // l32ai
+        0b1100 => unimplemented!(),   // addi
+        0b1101 => unimplemented!(),   // addmi
+        0b1110 => unimplemented!(),   // s32c1i
+        0b1111 => unimplemented!(),   // s32ri
+        _ => None,
+    }
+}
+
+fn parse_cache(value: u32) -> Option<Instruction> {
+    let t = extract_t(value);
+
+    match t {
+        0b0000 => unimplemented!(), // dpfr
+        0b0001 => unimplemented!(), // fpfw
+        0b0010 => unimplemented!(), // fpfro
+        0b0011 => unimplemented!(), // fpfwo
+        0b0100 => unimplemented!(), // dhwb
+        0b0101 => unimplemented!(), // dhwbi
+        0b0110 => unimplemented!(), // dhi
+        0b0111 => unimplemented!(), // dii
+        0b1000 => parse_dce(value), // dce
+        0b1100 => unimplemented!(), // ipf
+        0b1101 => parse_ice(value), // ice
+        0b1110 => unimplemented!(), // ihi
+        0b1111 => unimplemented!(), // iii
+        _ => None,
+    }
+}
+
+fn parse_dce(value: u32) -> Option<Instruction> {
+    let op1 = extract_op1(value);
+
+    match op1 {
+        0b0000 => unimplemented!(), // dpfl
+        0b0010 => unimplemented!(), // dhu
+        0b0011 => unimplemented!(), // diu
+        0b0100 => unimplemented!(), // diwb
+        0b0101 => unimplemented!(), // diwbi
+        _ => None,
+    }
+}
+
+fn parse_ice(value: u32) -> Option<Instruction> {
+    let op1 = extract_op1(value);
+
+    match op1 {
+        0b0000 => unimplemented!(), // ipfl
+        0b0010 => unimplemented!(), // ihu
+        0b0011 => unimplemented!(), // iiu
         _ => None,
     }
 }
@@ -300,40 +516,295 @@ fn parse_mac16(value: u32) -> Option<Instruction> {
     let op2 = extract_op2(value);
 
     match op2 {
-        0b0000 => unimplemented!(), // macid
-        0b0001 => unimplemented!(), // maccd
-        0b0010 => unimplemented!(), // macdd
-        0b0011 => unimplemented!(), // macad
-        0b0100 => unimplemented!(), // macia
-        0b0101 => unimplemented!(), // macca
-        0b0110 => unimplemented!(), // macda
-        0b0111 => unimplemented!(), // macaa
-        0b1000 => unimplemented!(), // macci
-        0b1001 => unimplemented!(), // macc
+        0b0000 => parse_macid(value), // macid
+        0b0001 => parse_maccd(value), // maccd
+        0b0010 => parse_macdd(value), // macdd
+        0b0011 => parse_macad(value), // macad
+        0b0100 => parse_macia(value), // macia
+        0b0101 => parse_macca(value), // macca
+        0b0110 => parse_macda(value), // macda
+        0b0111 => parse_macaa(value), // macaa
+        0b1000 => parse_maci(value),  // maci
+        0b1001 => parse_macc(value),  // macc
         _ => None,
     }
 }
 
-fn parse_(value: u32) -> Option<Instruction> {
-    let op0 = extract_(value);
+fn parse_macid(value: u32) -> Option<Instruction> {
+    let op1 = extract_op1(value);
 
-    match op0 {
-        0b0000 => unimplemented!(), //
-        0b0001 => unimplemented!(), //
-        0b0010 => unimplemented!(), //
-        0b0011 => unimplemented!(), //
-        0b0100 => unimplemented!(), //
-        0b0101 => unimplemented!(), //
-        0b0110 => unimplemented!(), //
-        0b0111 => unimplemented!(), //
-        0b1000 => unimplemented!(), //
-        0b1001 => unimplemented!(), //
-        0b1010 => unimplemented!(), //
-        0b1011 => unimplemented!(), //
-        0b1100 => unimplemented!(), //
-        0b1101 => unimplemented!(), //
-        0b1110 => unimplemented!(), //
-        0b1111 => unimplemented!(), //
+    match op1 {
+        0b1000 => unimplemented!(), // mula.dd.ll.ldinc
+        0b1001 => unimplemented!(), // mula.dd.hl.ldinc
+        0b1010 => unimplemented!(), // mula.dd.lh.ldinc
+        0b1011 => unimplemented!(), // mula.dd.hh.ldinc
+        _ => None,
+    }
+}
+
+fn parse_macia(value: u32) -> Option<Instruction> {
+    let op1 = extract_op1(value);
+
+    match op1 {
+        0b1000 => unimplemented!(), // mula.da.ll.ldinc
+        0b1001 => unimplemented!(), // mula.da.hl.ldinc
+        0b1010 => unimplemented!(), // mula.da.lh.ldinc
+        0b1011 => unimplemented!(), // mula.da.hh.ldinc
+        _ => None,
+    }
+}
+
+fn parse_macdd(value: u32) -> Option<Instruction> {
+    let op1 = extract_op1(value);
+
+    match op1 {
+        0b0100 => unimplemented!(), // mul.dd.ll
+        0b0101 => unimplemented!(), // mul.dd.hl
+        0b0110 => unimplemented!(), // mul.dd.lh
+        0b0111 => unimplemented!(), // mul.dd.hh
+        0b1000 => unimplemented!(), // mula.dd.ll
+        0b1001 => unimplemented!(), // mula.dd.hl
+        0b1010 => unimplemented!(), // mula.dd.lh
+        0b1011 => unimplemented!(), // mula.dd.hh
+        0b1100 => unimplemented!(), // muls.dd.ll
+        0b1101 => unimplemented!(), // muls.dd.hl
+        0b1110 => unimplemented!(), // muls.dd.lh
+        0b1111 => unimplemented!(), // muls.dd.hh
+        _ => None,
+    }
+}
+
+fn parse_macad(value: u32) -> Option<Instruction> {
+    let op1 = extract_op1(value);
+
+    match op1 {
+        0b0100 => unimplemented!(), // mul.ad.ll
+        0b0101 => unimplemented!(), // mul.ad.hl
+        0b0110 => unimplemented!(), // mul.ad.lh
+        0b0111 => unimplemented!(), // mul.ad.hh
+        0b1000 => unimplemented!(), // mula.ad.ll
+        0b1001 => unimplemented!(), // mula.ad.hl
+        0b1010 => unimplemented!(), // mula.ad.lh
+        0b1011 => unimplemented!(), // mula.ad.hh
+        0b1100 => unimplemented!(), // muls.ad.ll
+        0b1101 => unimplemented!(), // muls.ad.hl
+        0b1110 => unimplemented!(), // muls.ad.lh
+        0b1111 => unimplemented!(), // muls.ad.hh
+        _ => None,
+    }
+}
+
+fn parse_maccd(value: u32) -> Option<Instruction> {
+    let op1 = extract_op1(value);
+
+    match op1 {
+        0b1000 => unimplemented!(), // mula.dd.ll.lddec
+        0b1001 => unimplemented!(), // mula.dd.hl.lddec
+        0b1010 => unimplemented!(), // mula.dd.lh.lddec
+        0b1011 => unimplemented!(), // mula.dd.hh.lddec
+        _ => None,
+    }
+}
+
+fn parse_macca(value: u32) -> Option<Instruction> {
+    let op1 = extract_op1(value);
+
+    match op1 {
+        0b1000 => unimplemented!(), // mula.da.ll.lddec
+        0b1001 => unimplemented!(), // mula.da.hl.lddec
+        0b1010 => unimplemented!(), // mula.da.lh.lddec
+        0b1011 => unimplemented!(), // mula.da.hh.lddec
+        _ => None,
+    }
+}
+
+fn parse_macda(value: u32) -> Option<Instruction> {
+    let op1 = extract_op1(value);
+
+    match op1 {
+        0b0100 => unimplemented!(), // mul.da.ll
+        0b0101 => unimplemented!(), // mul.da.hl
+        0b0110 => unimplemented!(), // mul.da.lh
+        0b0111 => unimplemented!(), // mul.da.hh
+        0b1000 => unimplemented!(), // mula.da.ll
+        0b1001 => unimplemented!(), // mula.da.hl
+        0b1010 => unimplemented!(), // mula.da.lh
+        0b1011 => unimplemented!(), // mula.da.hh
+        0b1100 => unimplemented!(), // muls.da.ll
+        0b1101 => unimplemented!(), // muls.da.hl
+        0b1110 => unimplemented!(), // muls.da.lh
+        0b1111 => unimplemented!(), // muls.da.hh
+        _ => None,
+    }
+}
+
+fn parse_macaa(value: u32) -> Option<Instruction> {
+    let op1 = extract_op1(value);
+
+    match op1 {
+        0b0000 => unimplemented!(), // umul.aa.ll
+        0b0001 => unimplemented!(), // umul.aa.hl
+        0b0010 => unimplemented!(), // umul.aa.lh
+        0b0011 => unimplemented!(), // umul.aa.hh
+        0b0100 => unimplemented!(), // mul.aa.ll
+        0b0101 => unimplemented!(), // mul.aa.hl
+        0b0110 => unimplemented!(), // mul.aa.lh
+        0b0111 => unimplemented!(), // mul.aa.hh
+        0b1000 => unimplemented!(), // mula.aa.ll
+        0b1001 => unimplemented!(), // mula.aa.hl
+        0b1010 => unimplemented!(), // mula.aa.lh
+        0b1011 => unimplemented!(), // mula.aa.hh
+        0b1100 => unimplemented!(), // muls.aa.ll
+        0b1101 => unimplemented!(), // muls.aa.hl
+        0b1110 => unimplemented!(), // muls.aa.lh
+        0b1111 => unimplemented!(), // muls.aa.hh
+        _ => None,
+    }
+}
+
+fn parse_maci(value: u32) -> Option<Instruction> {
+    let op1 = extract_op1(value);
+
+    match op1 {
+        0b0000 => unimplemented!(), // ldinc
+        _ => None,
+    }
+}
+
+fn parse_macc(value: u32) -> Option<Instruction> {
+    let op1 = extract_op1(value);
+
+    match op1 {
+        0b0000 => unimplemented!(), // lddec
+        _ => None,
+    }
+}
+
+fn parse_calln(value: u32) -> Option<Instruction> {
+    let n = extract_n(value);
+
+    match n {
+        0b00 => unimplemented!(), // call0
+        0b01 => unimplemented!(), // call4
+        0b10 => unimplemented!(), // call8
+        0b11 => unimplemented!(), // call12
+        _ => None,
+    }
+}
+
+fn parse_si(value: u32) -> Option<Instruction> {
+    let n = extract_n(value);
+
+    match n {
+        0b00 => unimplemented!(), // j
+        0b01 => parse_bz(value),  // bz
+        0b10 => parse_bi0(value), // bi0
+        0b11 => parse_bi1(value), // bi1
+        _ => None,
+    }
+}
+
+fn parse_bz(value: u32) -> Option<Instruction> {
+    let m = extract_m(value);
+
+    match m {
+        0b00 => unimplemented!(), // beqz
+        0b01 => unimplemented!(), // bnez
+        0b10 => unimplemented!(), // bltz
+        0b11 => unimplemented!(), // bgez
+        _ => None,
+    }
+}
+
+fn parse_bi0(value: u32) -> Option<Instruction> {
+    let m = extract_m(value);
+
+    match m {
+        0b00 => unimplemented!(), // beqi
+        0b01 => unimplemented!(), // bnei
+        0b10 => unimplemented!(), // blti
+        0b11 => unimplemented!(), // bgei
+        _ => None,
+    }
+}
+
+fn parse_bi1(value: u32) -> Option<Instruction> {
+    let m = extract_m(value);
+
+    match m {
+        0b00 => unimplemented!(), // entry
+        0b01 => parse_b1(value),  // b1
+        0b10 => unimplemented!(), // bltui
+        0b11 => unimplemented!(), // bgeui
+        _ => None,
+    }
+}
+
+fn parse_b1(value: u32) -> Option<Instruction> {
+    let r = extract_r(value);
+
+    match r {
+        0b0000 => unimplemented!(), // bf
+        0b0001 => unimplemented!(), // bt
+        0b1000 => unimplemented!(), // loop
+        0b1001 => unimplemented!(), // loopnez
+        0b1010 => unimplemented!(), // loopgtz
+        _ => None,
+    }
+}
+
+fn parse_b(value: u32) -> Option<Instruction> {
+    let r = extract_r(value);
+
+    match r {
+        0b0000 => unimplemented!(),          // bnone
+        0b0001 => unimplemented!(),          // beq
+        0b0010 => unimplemented!(),          // blt
+        0b0011 => unimplemented!(),          // bltu
+        0b0100 => unimplemented!(),          // ball
+        0b0101 => unimplemented!(),          // bbc
+        0b0110 | 0b111 => unimplemented!(),  // bbci
+        0b1000 => unimplemented!(),          // bany
+        0b1001 => unimplemented!(),          // bne
+        0b1010 => unimplemented!(),          // bge
+        0b1011 => unimplemented!(),          // bgeu
+        0b1100 => unimplemented!(),          // bnall
+        0b1101 => unimplemented!(),          // bbs
+        0b1110 | 0b1111 => unimplemented!(), // bbsi
+        _ => None,
+    }
+}
+
+fn parse_st2(value: u32) -> Option<Instruction> {
+    let t = extract_t(value);
+
+    match t {
+        0b0000 | 0b0001 | 0b0010 | 0b0011 | 0b0100 | 0b0101 | 0b0110 | 0b0111 => unimplemented!(), // movi.n
+        0b1000 | 0b1001 | 0b1010 | 0b1011 => unimplemented!(), // beqz.n
+        0b1100 | 0b1101 | 0b1110 | 0b1111 => unimplemented!(), // bnez.n
+        _ => None,
+    }
+}
+
+fn parse_st3(value: u32) -> Option<Instruction> {
+    let r = extract_r(value);
+
+    match r {
+        0b0000 => unimplemented!(), // mov.n
+        0b1111 => parse_s3(value),  // s3
+        _ => None,
+    }
+}
+
+fn parse_s3(value: u32) -> Option<Instruction> {
+    let t = extract_t(value);
+
+    match t {
+        0b0000 => unimplemented!(), // ret.n
+        0b0001 => unimplemented!(), // retw.w
+        0b0010 => unimplemented!(), // break.n
+        0b0011 => unimplemented!(), // nop.n
+        0b0110 => unimplemented!(), // ill.n
         _ => None,
     }
 }
