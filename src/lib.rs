@@ -1,4 +1,4 @@
-use byteorder::{ByteOrder, LittleEndian};
+use byteorder::{ByteOrder, BigEndian};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Instruction {}
@@ -57,18 +57,18 @@ pub fn decode(input: &[u8]) -> Option<Instruction> {
 
     // need to decide if we're looking at a normal or narrow (16bit) instruction. All narrow
     // instructions have the high bit of op0 set.
-    let value = if op0 & 0x8 {
+    let value = if (op0 & 0x8) > 0 {
         if input.len() < 2 {
             return None
         }
 
-        LittleEndian::read_u16(&input) as u32
+        BigEndian::read_u16(&input) as u32
     } else {
         if input.len() < 3 {
             return None
         }
 
-        LittleEndian::read_u24(&input)
+        BigEndian::read_u24(&input)
     };
 
     match op0 {
@@ -830,22 +830,15 @@ mod tests {
 
     #[test]
     fn it_works() {
-        let data = [0x42, 0x43, 0x44, 0x45];
+        let data = [0xa1, 0x3a, 0xef];
         let decoded = decode(&data);
         assert!(decoded == None);
     }
 
     #[test]
-    fn it_doesnt_work() {
-        let data = [0x42, 0x43];
+    fn two_byte() {
+        let data = [0x0c, 0xa2];
         let decoded = decode(&data);
         assert!(decoded == None);
-    }
-
-    #[test]
-    fn j() {
-        let data = [0x06, 0x01, 0x00];
-        let decoded = decode(&data);
-        assert!(decoded == Some(Instruction::J(4)));
     }
 }
