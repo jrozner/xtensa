@@ -183,6 +183,7 @@ fn parse_sync(value: u32) -> Option<Instruction> {
         0b1000 => unimplemented!(), // excw
         0b1100 => unimplemented!(), // memw
         0b1101 => unimplemented!(), // extw
+        //TODO 1111 is NOP?
         _ => None,
     }
 }
