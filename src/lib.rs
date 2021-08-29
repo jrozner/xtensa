@@ -4,7 +4,7 @@ use byteorder::{ByteOrder, LittleEndian};
 pub enum Instruction {}
 
 #[inline]
-fn extract_op0(value: u32) -> u32 {
+fn extract_op0(value: u8) -> u8 {
     value & 0b1111
 }
 
@@ -49,13 +49,27 @@ fn extract_rs(value: u32) -> u32 {
 }
 
 pub fn decode(input: &[u8]) -> Option<Instruction> {
-    if input.len() < 3 {
+    if input.len() < 1 {
         return None;
     }
 
-    let value = LittleEndian::read_u24(&input);
+    let op0 = extract_op0(input[0]);
 
-    let op0 = extract_op0(value);
+    // need to decide if we're looking at a normal or narrow (16bit) instruction. All narrow
+    // instructions have the high bit of op0 set.
+    let value = if op0 & 0x8 {
+        if input.len() < 2 {
+            return None
+        }
+
+        LittleEndian::read_u16(&input) as u32
+    } else {
+        if input.len() < 3 {
+            return None
+        }
+
+        LittleEndian::read_u24(&input)
+    };
 
     match op0 {
         0b0000 => parse_qrst(value),
