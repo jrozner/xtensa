@@ -1,41 +1,41 @@
 #[derive(Debug, Clone, PartialEq)]
 pub enum Instruction {
-    Abs(GenericInstruction),
-    Add(GenericInstruction),
-    Addx2(GenericInstruction),
-    Addx4(GenericInstruction),
-    Addx8(GenericInstruction),
-    And(GenericInstruction),
-    Dsync(GenericInstruction),
-    Esync(GenericInstruction),
-    Extui(GenericInstruction),
-    Extw(GenericInstruction),
-    Isync(GenericInstruction),
-    Memw(GenericInstruction),
-    Moveqz(GenericInstruction),
-    Movgez(GenericInstruction),
-    Movltz(GenericInstruction),
-    Neg(GenericInstruction),
-    Nop(GenericInstruction),
-    Or(GenericInstruction),
-    Rsync(GenericInstruction),
-    Sll(GenericInstruction),
-    Slli(GenericInstruction),
-    Sra(GenericInstruction),
-    Srai(GenericInstruction),
-    Src(GenericInstruction),
-    Srl(GenericInstruction),
-    Srli(GenericInstruction),
-    Ssa8l(GenericInstruction),
-    Ssai(GenericInstruction),
-    Ssl(GenericInstruction),
-    Ssr(GenericInstruction),
-    Sub(GenericInstruction),
-    Subx2(GenericInstruction),
-    Subx4(GenericInstruction),
-    Subx8(GenericInstruction),
-    Xor(GenericInstruction),
-    Xsr(GenericInstruction),
+    Abs(Rrr),
+    Add(Rrr),
+    Addx2(Rrr),
+    Addx4(Rrr),
+    Addx8(Rrr),
+    And(Rrr),
+    Dsync(Rrr),
+    Esync(Rrr),
+    Extui(Rrr),
+    Extw(Rrr),
+    Isync(Rrr),
+    Memw(Rrr),
+    Moveqz(Rrr),
+    Movgez(Rrr),
+    Movltz(Rrr),
+    Neg(Rrr),
+    Nop(Rrr),
+    Or(Rrr),
+    Rsync(Rrr),
+    Sll(Rrr),
+    Slli(Rrr),
+    Sra(Rrr),
+    Srai(Rrr),
+    Src(Rrr),
+    Srl(Rrr),
+    Srli(Rrr),
+    Ssa8l(Rrr),
+    Ssai(Rrr),
+    Ssl(Rrr),
+    Ssr(Rrr),
+    Sub(Rrr),
+    Subx2(Rrr),
+    Subx4(Rrr),
+    Subx8(Rrr),
+    Xor(Rrr),
+    Xsr(Rrr),
     Addi(GenericInstruction),
     Addmi(GenericInstruction),
     Ball(GenericInstruction),
@@ -105,6 +105,69 @@ pub enum Instruction {
     Bnezn(GenericInstruction),
     Movin(GenericInstruction),
 }
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct Rrr {
+    name: String,
+    r: u32,
+    s: u32,
+    t: u32,
+}
+
+impl Rrr {
+    pub fn new(name: String, r: u32, s: u32, t: u32) -> Rrr {
+        Rrr { name, r, s, t }
+    }
+
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn r(&self) -> u32 {
+        self.r
+    }
+
+    pub fn s(&self) -> u32 {
+        self.s
+    }
+
+    pub fn t(&self) -> u32 {
+        self.t
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct Rri4 {}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct Rri8 {}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct Ri16 {}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct Rsr {}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct Call {}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct Callx {}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct Bri8 {}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct Bri12 {}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct Rrrn {}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct Ri7 {}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct Ri6 {}
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct GenericInstruction {
