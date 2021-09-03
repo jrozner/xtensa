@@ -1,3 +1,8 @@
+use crate::decode::{
+    extract_m, extract_n, extract_op0, extract_op1, extract_op2, extract_r, extract_rs, extract_s,
+    extract_t,
+};
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum Instruction {
     Abs(Rrr),
@@ -133,6 +138,14 @@ impl Rrr {
 
     pub fn t(&self) -> u32 {
         self.t
+    }
+
+    pub fn from_value(name: String, value: u32) -> Rrr {
+        let r = extract_r(value);
+        let s = extract_s(value);
+        let t = extract_t(value);
+
+        Rrr::new(name, r, s, t)
     }
 }
 

@@ -3,47 +3,47 @@ use byteorder::{ByteOrder, LittleEndian};
 use crate::instruction::{Instruction, Rrr};
 
 #[inline]
-fn extract_op0(value: u8) -> u8 {
+pub(crate) fn extract_op0(value: u8) -> u8 {
     value & 0b1111
 }
 
 #[inline]
-fn extract_op1(value: u32) -> u32 {
+pub(crate) fn extract_op1(value: u32) -> u32 {
     (value & 0xf0000) >> 16
 }
 
 #[inline]
-fn extract_op2(value: u32) -> u32 {
+pub(crate) fn extract_op2(value: u32) -> u32 {
     (value & 0xf00000) >> 20
 }
 
 #[inline]
-fn extract_n(value: u32) -> u32 {
+pub(crate) fn extract_n(value: u32) -> u32 {
     (value & 0x30) >> 4
 }
 
 #[inline]
-fn extract_m(value: u32) -> u32 {
+pub(crate) fn extract_m(value: u32) -> u32 {
     (value & 0xc0) >> 6
 }
 
 #[inline]
-fn extract_r(value: u32) -> u32 {
+pub(crate) fn extract_r(value: u32) -> u32 {
     (value & 0xf000) >> 12
 }
 
 #[inline]
-fn extract_s(value: u32) -> u32 {
+pub(crate) fn extract_s(value: u32) -> u32 {
     (value & 0xf00) >> 8
 }
 
 #[inline]
-fn extract_t(value: u32) -> u32 {
+pub(crate) fn extract_t(value: u32) -> u32 {
     (value & 0xf0) >> 4
 }
 
 #[inline]
-fn extract_rs(value: u32) -> u32 {
+pub(crate) fn extract_rs(value: u32) -> u32 {
     (value & 0xff00) >> 8
 }
 
@@ -113,41 +113,25 @@ fn parse_rst0(value: u32) -> Option<Instruction> {
 
     match op2 {
         0b0000 => parse_st0(value), // st0
-        0b0001 => {
-            let r = extract_r(value);
-            let s = extract_s(value);
-            let t = extract_t(value);
-            Some(Instruction::And(Rrr::new("and".to_owned(), r, s, t)))
-        }, // and
+        0b0001 => Some(Instruction::And(Rrr::from_value("and".to_owned(), value))), // and
         0b0010 => unimplemented!(), // or
         0b0011 => unimplemented!(), // xor
         0b0100 => parse_st1(value), // st1
         0b0101 => parse_tlb(value), // tlb
         0b0110 => parse_rt0(value), // rt0
-        0b1000 => {
-            let r = extract_r(value);
-            let s = extract_s(value);
-            let t = extract_t(value);
-            Some(Instruction::Add(Rrr::new("add".to_owned(), r, s, t)))
-        } // add
-        0b1001 => {
-            let r = extract_r(value);
-            let s = extract_s(value);
-            let t = extract_t(value);
-            Some(Instruction::Addx2(Rrr::new("addx2".to_owned(), r, s, t)))
-        } // addx2
-        0b1010 => {
-            let r = extract_r(value);
-            let s = extract_s(value);
-            let t = extract_t(value);
-            Some(Instruction::Addx4(Rrr::new("addx4".to_owned(), r, s, t)))
-        } // addx4
-        0b1011 => {
-            let r = extract_r(value);
-            let s = extract_s(value);
-            let t = extract_t(value);
-            Some(Instruction::Addx8(Rrr::new("addx8".to_owned(), r, s, t)))
-        } // addx8
+        0b1000 => Some(Instruction::Add(Rrr::from_value("add".to_owned(), value))), // add
+        0b1001 => Some(Instruction::Addx2(Rrr::from_value(
+            "addx2".to_owned(),
+            value,
+        ))), // addx2
+        0b1010 => Some(Instruction::Addx4(Rrr::from_value(
+            "addx4".to_owned(),
+            value,
+        ))), // addx4
+        0b1011 => Some(Instruction::Addx8(Rrr::from_value(
+            "addx8".to_owned(),
+            value,
+        ))), // addx8
         0b1100 => unimplemented!(), // sub
         0b1101 => unimplemented!(), // subx2
         0b1110 => unimplemented!(), // subx4
@@ -214,25 +198,25 @@ fn parse_sync(value: u32) -> Option<Instruction> {
     let t = extract_t(value);
 
     match t {
-        0b0000 => unimplemented!(), // isync
-        0b0001 => unimplemented!(), // rsync
-        0b0010 => {
-            let r = extract_r(value);
-            let s = extract_s(value);
-            Some(Instruction::Esync(Rrr::new("esync".to_owned(), r, s, t)))
-        }, // esync
-        0b0011 => {
-            let r = extract_r(value);
-            let s = extract_s(value);
-            Some(Instruction::Dsync(Rrr::new("dsync".to_owned(), r, s, t)))
-        }, // dsync
+        0b0000 => Some(Instruction::Isync(Rrr::from_value(
+            "isync".to_owned(),
+            value,
+        ))), // isync
+        0b0001 => Some(Instruction::Rsync(Rrr::from_value(
+            "rsync".to_owned(),
+            value,
+        ))), // rsync
+        0b0010 => Some(Instruction::Esync(Rrr::from_value(
+            "esync".to_owned(),
+            value,
+        ))), // esync
+        0b0011 => Some(Instruction::Dsync(Rrr::from_value(
+            "dsync".to_owned(),
+            value,
+        ))), // dsync
         0b1000 => unimplemented!(), // excw
-        0b1100 => unimplemented!(), // memw
-        0b1101 => {
-            let r = extract_r(value);
-            let s = extract_s(value);
-            Some(Instruction::Extw(Rrr::new("extw".to_owned(), r, s, t)))
-        }, // extw
+        0b1100 => Some(Instruction::Memw(Rrr::from_value("memw".to_owned(), value))), // memw
+        0b1101 => Some(Instruction::Extw(Rrr::from_value("extw".to_owned(), value))), // extw
         //TODO 1111 is NOP?
         _ => None,
     }
@@ -303,11 +287,7 @@ fn parse_rt0(value: u32) -> Option<Instruction> {
 
     match s {
         0b0000 => unimplemented!(), // neg
-        0b0001 => {
-            let r = extract_r(value);
-            let t = extract_t(value);
-            Some(Instruction::Abs(Rrr::new("abs".to_owned(), r, s, t)))
-        } // abs
+        0b0001 => Some(Instruction::Abs(Rrr::from_value("abs".to_owned(), value))), // abs
         _ => None,
     }
 }
@@ -943,6 +923,31 @@ mod tests {
         let data = [0xd0, 0x20, 0x00];
         let decoded = decode(&data);
         let expected = Some(Instruction::Extw(Rrr::new("extw".to_owned(), 2, 0, 13)));
+        assert!(decoded == expected);
+    }
+
+    #[test]
+    fn isync() {
+        let data = [0x00, 0x20, 0x00];
+        let decoded = decode(&data);
+        let expected = Some(Instruction::Isync(Rrr::new("isync".to_owned(), 2, 0, 0)));
+        assert!(decoded == expected);
+    }
+
+    #[test]
+    fn memw() {
+        let data = [0xc0, 0x20, 0x00];
+        let decoded = decode(&data);
+        let expected = Some(Instruction::Memw(Rrr::new("memw".to_owned(), 2, 0, 12)));
+        assert!(decoded == expected);
+    }
+
+    // TODO do more here
+    #[test]
+    fn rsync() {
+        let data = [0x10, 0x20, 0x00];
+        let decoded = decode(&data);
+        let expected = Some(Instruction::Rsync(Rrr::new("rsync".to_owned(), 2, 0, 1)));
         assert!(decoded == expected);
     }
 }
