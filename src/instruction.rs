@@ -113,19 +113,14 @@ pub enum Instruction {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Rrr {
-    name: String,
     r: u32,
     s: u32,
     t: u32,
 }
 
 impl Rrr {
-    pub fn new(name: String, r: u32, s: u32, t: u32) -> Rrr {
-        Rrr { name, r, s, t }
-    }
-
-    pub fn name(&self) -> &str {
-        &self.name
+    pub fn new(r: u32, s: u32, t: u32) -> Rrr {
+        Rrr { r, s, t }
     }
 
     pub fn r(&self) -> u32 {
@@ -139,13 +134,15 @@ impl Rrr {
     pub fn t(&self) -> u32 {
         self.t
     }
+}
 
-    pub fn from_value(name: String, value: u32) -> Rrr {
+impl From<u32> for Rrr {
+    fn from(value: u32) -> Self {
         let r = extract_r(value);
         let s = extract_s(value);
         let t = extract_t(value);
 
-        Rrr::new(name, r, s, t)
+        Rrr { r, s, t }
     }
 }
 

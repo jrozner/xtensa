@@ -112,30 +112,21 @@ fn parse_rst0(value: u32) -> Option<Instruction> {
     let op2 = extract_op2(value);
 
     match op2 {
-        0b0000 => parse_st0(value), // st0
-        0b0001 => Some(Instruction::And(Rrr::from_value("and".to_owned(), value))), // and
-        0b0010 => unimplemented!(), // or
-        0b0011 => unimplemented!(), // xor
-        0b0100 => parse_st1(value), // st1
-        0b0101 => parse_tlb(value), // tlb
-        0b0110 => parse_rt0(value), // rt0
-        0b1000 => Some(Instruction::Add(Rrr::from_value("add".to_owned(), value))), // add
-        0b1001 => Some(Instruction::Addx2(Rrr::from_value(
-            "addx2".to_owned(),
-            value,
-        ))), // addx2
-        0b1010 => Some(Instruction::Addx4(Rrr::from_value(
-            "addx4".to_owned(),
-            value,
-        ))), // addx4
-        0b1011 => Some(Instruction::Addx8(Rrr::from_value(
-            "addx8".to_owned(),
-            value,
-        ))), // addx8
-        0b1100 => unimplemented!(), // sub
-        0b1101 => unimplemented!(), // subx2
-        0b1110 => unimplemented!(), // subx4
-        0b1111 => unimplemented!(), // subx8
+        0b0000 => parse_st0(value),                           // st0
+        0b0001 => Some(Instruction::And(Rrr::from(value))),   // and
+        0b0010 => Some(Instruction::Or(Rrr::from(value))),    // or
+        0b0011 => Some(Instruction::Xor(Rrr::from(value))),   // xor
+        0b0100 => parse_st1(value),                           // st1
+        0b0101 => parse_tlb(value),                           // tlb
+        0b0110 => parse_rt0(value),                           // rt0
+        0b1000 => Some(Instruction::Add(Rrr::from(value))),   // add
+        0b1001 => Some(Instruction::Addx2(Rrr::from(value))), // addx2
+        0b1010 => Some(Instruction::Addx4(Rrr::from(value))), // addx4
+        0b1011 => Some(Instruction::Addx8(Rrr::from(value))), // addx8
+        0b1100 => Some(Instruction::Sub(Rrr::from(value))),   // sub
+        0b1101 => Some(Instruction::Subx2(Rrr::from(value))), // subx2
+        0b1110 => Some(Instruction::Subx4(Rrr::from(value))), // subx4
+        0b1111 => Some(Instruction::Subx8(Rrr::from(value))), // subx8
         _ => None,
     }
 }
@@ -198,25 +189,13 @@ fn parse_sync(value: u32) -> Option<Instruction> {
     let t = extract_t(value);
 
     match t {
-        0b0000 => Some(Instruction::Isync(Rrr::from_value(
-            "isync".to_owned(),
-            value,
-        ))), // isync
-        0b0001 => Some(Instruction::Rsync(Rrr::from_value(
-            "rsync".to_owned(),
-            value,
-        ))), // rsync
-        0b0010 => Some(Instruction::Esync(Rrr::from_value(
-            "esync".to_owned(),
-            value,
-        ))), // esync
-        0b0011 => Some(Instruction::Dsync(Rrr::from_value(
-            "dsync".to_owned(),
-            value,
-        ))), // dsync
-        0b1000 => unimplemented!(), // excw
-        0b1100 => Some(Instruction::Memw(Rrr::from_value("memw".to_owned(), value))), // memw
-        0b1101 => Some(Instruction::Extw(Rrr::from_value("extw".to_owned(), value))), // extw
+        0b0000 => Some(Instruction::Isync(Rrr::from(value))), // isync
+        0b0001 => Some(Instruction::Rsync(Rrr::from(value))), // rsync
+        0b0010 => Some(Instruction::Esync(Rrr::from(value))), // esync
+        0b0011 => Some(Instruction::Dsync(Rrr::from(value))), // dsync
+        0b1000 => unimplemented!(),                           // excw
+        0b1100 => Some(Instruction::Memw(Rrr::from(value))),  // memw
+        0b1101 => Some(Instruction::Extw(Rrr::from(value))),  // extw
         //TODO 1111 is NOP?
         _ => None,
     }
@@ -250,11 +229,11 @@ fn parse_st1(value: u32) -> Option<Instruction> {
     let r = extract_r(value);
 
     match r {
-        0b0000 => unimplemented!(), // ssr
-        0b0001 => unimplemented!(), // ssl
-        0b0010 => unimplemented!(), // ssa8l
+        0b0000 => Some(Instruction::Ssr(Rrr::from(value))), // ssr
+        0b0001 => Some(Instruction::Ssl(Rrr::from(value))), // ssl
+        0b0010 => Some(Instruction::Ssa8l(Rrr::from(value))), // ssa8l
         0b0011 => unimplemented!(), // ssa8b
-        0b0100 => unimplemented!(), // ssai
+        0b0100 => Some(Instruction::Ssai(Rrr::from(value))), // ssai
         0b0110 => unimplemented!(), // rer
         0b0111 => unimplemented!(), // wer
         0b1000 => unimplemented!(), // rotw
@@ -286,8 +265,8 @@ fn parse_rt0(value: u32) -> Option<Instruction> {
     let s = extract_s(value);
 
     match s {
-        0b0000 => unimplemented!(), // neg
-        0b0001 => Some(Instruction::Abs(Rrr::from_value("abs".to_owned(), value))), // abs
+        0b0000 => Some(Instruction::Neg(Rrr::from(value))), // neg
+        0b0001 => Some(Instruction::Abs(Rrr::from(value))), // abs
         _ => None,
     }
 }
@@ -296,15 +275,15 @@ fn parse_rst1(value: u32) -> Option<Instruction> {
     let op2 = extract_op2(value);
 
     match op2 {
-        0b0000 | 0b0001 => unimplemented!(), // slli
-        0b0010 | 0b0011 => unimplemented!(), // srai
-        0b0100 => unimplemented!(),          // srli
-        0b0110 => unimplemented!(),          // xsr
+        0b0000 | 0b0001 => Some(Instruction::Slli(Rrr::from(value))), // slli
+        0b0010 | 0b0011 => Some(Instruction::Srai(Rrr::from(value))), // srai
+        0b0100 => Some(Instruction::Srli(Rrr::from(value))),          // srli
+        0b0110 => Some(Instruction::Xsr(Rrr::from(value))),          // xsr
         0b0111 => parse_accer(value),        // accer
-        0b1000 => unimplemented!(),          // src
-        0b1001 => unimplemented!(),          // srl
-        0b1010 => unimplemented!(),          // sll
-        0b1011 => unimplemented!(),          // sra
+        0b1000 => Some(Instruction::Src(Rrr::from(value))), // src
+        0b1001 => Some(Instruction::Srl(Rrr::from(value))),          // srl
+        0b1010 => Some(Instruction::Sll(Rrr::from(value))), // sll
+        0b1011 => Some(Instruction::Sra(Rrr::from(value))), // sra
         0b1100 => unimplemented!(),          // mul16u
         0b1101 => unimplemented!(),          // mul16s
         0b1111 => parse_imp(value),          // imp
@@ -379,10 +358,10 @@ fn parse_rst3(value: u32) -> Option<Instruction> {
         0b0101 => unimplemented!(), // max
         0b0110 => unimplemented!(), // minu
         0b0111 => unimplemented!(), // maxu
-        0b1000 => unimplemented!(), // moveqz
+        0b1000 => Some(Instruction::Moveqz(Rrr::from(value))), // moveqz
         0b1001 => unimplemented!(), // movnez
-        0b1010 => unimplemented!(), // movltz
-        0b1011 => unimplemented!(), // movgez
+        0b1010 => Some(Instruction::Movltz(Rrr::from(value))), // movltz
+        0b1011 => Some(Instruction::Movgez(Rrr::from(value))), // movgez
         0b1100 => unimplemented!(), // movf
         0b1101 => unimplemented!(), // movt
         0b1110 => unimplemented!(), // rur
@@ -853,7 +832,7 @@ mod tests {
     fn abs() {
         let data = [0x00, 0x01, 0x60];
         let decoded = decode(&data);
-        let expected = Some(Instruction::Abs(Rrr::new("abs".to_owned(), 0, 1, 0)));
+        let expected = Some(Instruction::Abs(Rrr::new(0, 1, 0)));
         assert!(decoded == expected);
     }
 
@@ -861,7 +840,7 @@ mod tests {
     fn add() {
         let data = [0x00, 0x00, 0x80];
         let decoded = decode(&data);
-        let expected = Some(Instruction::Add(Rrr::new("add".to_owned(), 0, 0, 0)));
+        let expected = Some(Instruction::Add(Rrr::new(0, 0, 0)));
         assert!(decoded == expected);
     }
 
@@ -869,7 +848,7 @@ mod tests {
     fn addx2() {
         let data = [0x00, 0x00, 0x90];
         let decoded = decode(&data);
-        let expected = Some(Instruction::Addx2(Rrr::new("addx2".to_owned(), 0, 0, 0)));
+        let expected = Some(Instruction::Addx2(Rrr::new(0, 0, 0)));
         assert!(decoded == expected);
     }
 
@@ -877,7 +856,7 @@ mod tests {
     fn addx4() {
         let data = [0x00, 0x00, 0xa0];
         let decoded = decode(&data);
-        let expected = Some(Instruction::Addx4(Rrr::new("addx4".to_owned(), 0, 0, 0)));
+        let expected = Some(Instruction::Addx4(Rrr::new(0, 0, 0)));
         assert!(decoded == expected);
     }
 
@@ -885,7 +864,7 @@ mod tests {
     fn addx8() {
         let data = [0x00, 0x00, 0xb0];
         let decoded = decode(&data);
-        let expected = Some(Instruction::Addx8(Rrr::new("addx8".to_owned(), 0, 0, 0)));
+        let expected = Some(Instruction::Addx8(Rrr::new(0, 0, 0)));
         assert!(decoded == expected);
     }
 
@@ -893,7 +872,7 @@ mod tests {
     fn and() {
         let data = [0x00, 0x00, 0x10];
         let decoded = decode(&data);
-        let expected = Some(Instruction::And(Rrr::new("and".to_owned(), 0, 0, 0)));
+        let expected = Some(Instruction::And(Rrr::new(0, 0, 0)));
         assert!(decoded == expected);
     }
 
@@ -901,7 +880,7 @@ mod tests {
     fn dsync() {
         let data = [0x30, 0x20, 0x00];
         let decoded = decode(&data);
-        let expected = Some(Instruction::Dsync(Rrr::new("dsync".to_owned(), 2, 0, 3)));
+        let expected = Some(Instruction::Dsync(Rrr::new(2, 0, 3)));
         assert!(decoded == expected);
     }
 
@@ -909,7 +888,7 @@ mod tests {
     fn esync() {
         let data = [0x20, 0x20, 0x00];
         let decoded = decode(&data);
-        let expected = Some(Instruction::Esync(Rrr::new("esync".to_owned(), 2, 0, 2)));
+        let expected = Some(Instruction::Esync(Rrr::new(2, 0, 2)));
         assert!(decoded == expected);
     }
 
@@ -922,7 +901,7 @@ mod tests {
     fn extw() {
         let data = [0xd0, 0x20, 0x00];
         let decoded = decode(&data);
-        let expected = Some(Instruction::Extw(Rrr::new("extw".to_owned(), 2, 0, 13)));
+        let expected = Some(Instruction::Extw(Rrr::new(2, 0, 13)));
         assert!(decoded == expected);
     }
 
@@ -930,7 +909,7 @@ mod tests {
     fn isync() {
         let data = [0x00, 0x20, 0x00];
         let decoded = decode(&data);
-        let expected = Some(Instruction::Isync(Rrr::new("isync".to_owned(), 2, 0, 0)));
+        let expected = Some(Instruction::Isync(Rrr::new(2, 0, 0)));
         assert!(decoded == expected);
     }
 
@@ -938,16 +917,200 @@ mod tests {
     fn memw() {
         let data = [0xc0, 0x20, 0x00];
         let decoded = decode(&data);
-        let expected = Some(Instruction::Memw(Rrr::new("memw".to_owned(), 2, 0, 12)));
+        let expected = Some(Instruction::Memw(Rrr::new(2, 0, 12)));
         assert!(decoded == expected);
     }
 
-    // TODO do more here
+    #[test]
+    fn moveqz() {
+        let data = [0x00, 0x00, 0x83];
+        let decoded = decode(&data);
+        let expected = Some(Instruction::Moveqz(Rrr::new(0, 0, 0)));
+        assert!(decoded == expected);
+    }
+
+    #[test]
+    fn movgez() {
+        let data = [0x00, 0x00, 0xb3];
+        let decoded = decode(&data);
+        let expected = Some(Instruction::Movgez(Rrr::new(0, 0, 0)));
+        assert!(decoded == expected);
+    }
+
+    #[test]
+    fn movltz() {
+        let data = [0x00, 0x00, 0xa3];
+        let decoded = decode(&data);
+        let expected = Some(Instruction::Movltz(Rrr::new(0, 0, 0)));
+        assert!(decoded == expected);
+    }
+
+    #[test]
+    fn neg() {
+        let data = [0x00, 0x00, 0x60];
+        let decoded = decode(&data);
+        let expected = Some(Instruction::Neg(Rrr::new(0, 0, 0)));
+        assert!(decoded == expected);
+    }
+
+    // TODO: nop
+    //#[test]
+    //fn nop() {
+    //    let data = [0x00, 0x00, 0x60];
+    //    let decoded = decode(&data);
+    //    let expected = Some(Instruction::Neg(Rrr::new(0, 0, 0)));
+    //    assert!(decoded == expected);
+    //}
+
+    #[test]
+    fn or() {
+        let data = [0x00, 0x00, 0x20];
+        let decoded = decode(&data);
+        let expected = Some(Instruction::Or(Rrr::new(0, 0, 0)));
+        assert!(decoded == expected);
+    }
+
     #[test]
     fn rsync() {
         let data = [0x10, 0x20, 0x00];
         let decoded = decode(&data);
-        let expected = Some(Instruction::Rsync(Rrr::new("rsync".to_owned(), 2, 0, 1)));
+        let expected = Some(Instruction::Rsync(Rrr::new(2, 0, 1)));
+        assert!(decoded == expected);
+    }
+
+    #[test]
+    fn sll() {
+        let data = [0x00, 0x00, 0xa1];
+        let decoded = decode(&data);
+        let expected = Some(Instruction::Sll(Rrr::new(0, 0, 0)));
+        assert!(decoded == expected);
+    }
+
+    #[test]
+    fn slli() {
+        let data = [0x00, 0x00, 0x01];
+        let decoded = decode(&data);
+        let expected = Some(Instruction::Slli(Rrr::new(0, 0, 0)));
+        assert!(decoded == expected);
+    }
+
+    #[test]
+    fn sra() {
+        let data = [0x00, 0x00, 0xb1];
+        let decoded = decode(&data);
+        let expected = Some(Instruction::Sra(Rrr::new(0, 0, 0)));
+        assert!(decoded == expected);
+    }
+
+    #[test]
+    fn srai() {
+        let data = [0x00, 0x00, 0x21];
+        let decoded = decode(&data);
+        let expected = Some(Instruction::Srai(Rrr::new(0, 0, 0)));
+        assert!(decoded == expected);
+    }
+
+    #[test]
+    fn src() {
+        let data = [0x00, 0x00, 0x81];
+        let decoded = decode(&data);
+        let expected = Some(Instruction::Src(Rrr::new(0, 0, 0)));
+        assert!(decoded == expected);
+    }
+
+    #[test]
+    fn srl() {
+        let data = [0x00, 0x00, 0x91];
+        let decoded = decode(&data);
+        let expected = Some(Instruction::Srl(Rrr::new(0, 0, 0)));
+        assert!(decoded == expected);
+    }
+
+    #[test]
+    fn srli() {
+        let data = [0x00, 0x00, 0x41];
+        let decoded = decode(&data);
+        let expected = Some(Instruction::Srli(Rrr::new(0, 0, 0)));
+        assert!(decoded == expected);
+    }
+
+    #[test]
+    fn ssa8l() {
+        let data = [0x00, 0x20, 0x40];
+        let decoded = decode(&data);
+        let expected = Some(Instruction::Ssa8l(Rrr::new(2, 0, 0)));
+        assert!(decoded == expected);
+    }
+
+    #[test]
+    fn ssai() {
+        let data = [0x00, 0x40, 0x40];
+        let decoded = decode(&data);
+        let expected = Some(Instruction::Ssai(Rrr::new(4, 0, 0)));
+        assert!(decoded == expected);
+    }
+
+    #[test]
+    fn ssl() {
+        let data = [0x00, 0x10, 0x40];
+        let decoded = decode(&data);
+        let expected = Some(Instruction::Ssl(Rrr::new(1, 0, 0)));
+        assert!(decoded == expected);
+    }
+
+    #[test]
+    fn ssr() {
+        let data = [0x00, 0x00, 0x40];
+        let decoded = decode(&data);
+        let expected = Some(Instruction::Ssr(Rrr::new(0, 0, 0)));
+        assert!(decoded == expected);
+    }
+
+    #[test]
+    fn sub() {
+        let data = [0x00, 0x00, 0xc0];
+        let decoded = decode(&data);
+        let expected = Some(Instruction::Sub(Rrr::new(0, 0, 0)));
+        assert!(decoded == expected);
+    }
+
+    #[test]
+    fn subx2() {
+        let data = [0x00, 0x00, 0xd0];
+        let decoded = decode(&data);
+        let expected = Some(Instruction::Subx2(Rrr::new(0, 0, 0)));
+        assert!(decoded == expected);
+    }
+
+    #[test]
+    fn subx4() {
+        let data = [0x00, 0x00, 0xe0];
+        let decoded = decode(&data);
+        let expected = Some(Instruction::Subx4(Rrr::new(0, 0, 0)));
+        assert!(decoded == expected);
+    }
+
+    #[test]
+    fn subx8() {
+        let data = [0x00, 0x00, 0xf0];
+        let decoded = decode(&data);
+        let expected = Some(Instruction::Subx8(Rrr::new(0, 0, 0)));
+        assert!(decoded == expected);
+    }
+
+    #[test]
+    fn xor() {
+        let data = [0x00, 0x00, 0x30];
+        let decoded = decode(&data);
+        let expected = Some(Instruction::Xor(Rrr::new(0, 0, 0)));
+        assert!(decoded == expected);
+    }
+
+    #[test]
+    fn xsr() {
+        let data = [0x00, 0x00, 0x61];
+        let decoded = decode(&data);
+        let expected = Some(Instruction::Xsr(Rrr::new(0, 0, 0)));
         assert!(decoded == expected);
     }
 }
