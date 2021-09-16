@@ -1,6 +1,6 @@
 use crate::decode::{
     extract_m, extract_n, extract_op0, extract_op1, extract_op2, extract_r, extract_rs, extract_s,
-    extract_t,
+    extract_t, extract_imm12
 };
 
 #[derive(Debug, Clone, PartialEq)]
@@ -71,10 +71,10 @@ pub enum Instruction {
     S8i(Rri8),
     S16i(Rri8),
     S32i(Rri8),
-    Beqz(GenericInstruction),
-    Bgez(GenericInstruction),
-    Bltz(GenericInstruction),
-    Bnez(GenericInstruction),
+    Beqz(Bri12),
+    Bgez(Bri12),
+    Bltz(Bri12),
+    Bnez(Bri12),
     Call0(GenericInstruction),
     J(GenericInstruction),
     Callx0(GenericInstruction),
@@ -200,7 +200,36 @@ pub struct Callx {}
 pub struct Bri8 {}
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct Bri12 {}
+pub struct Bri12 {
+    s: u32,
+    imm12: u16,
+}
+
+impl Bri12 {
+    pub fn new(s: u32, imm12: u16) -> Bri12 {
+        Bri12{
+            s,
+            imm12,
+        }
+    }
+
+    pub fn s(&self) -> u32 {
+        self.s
+    }
+
+    pub fn imm12(&self) -> u16 {
+        self.imm12
+    }
+}
+
+impl From<u32> for Bri12 {
+    fn from(value: u32) -> Self {
+        let s = extract_s(value);
+        let imm12 = extract_imm12(value);
+
+        Bri12 { s, imm12 }
+    }
+}
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Rrrn {}

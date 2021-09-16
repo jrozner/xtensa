@@ -1,6 +1,6 @@
 use byteorder::{ByteOrder, LittleEndian};
 
-use crate::instruction::{Instruction, Rri8, Rrr};
+use crate::instruction::{Instruction, Rri8, Rrr, Bri12};
 
 #[inline]
 pub(crate) fn extract_op0(value: u8) -> u8 {
@@ -45,6 +45,12 @@ pub(crate) fn extract_t(value: u32) -> u32 {
 #[inline]
 pub(crate) fn extract_rs(value: u32) -> u32 {
     (value & 0xff00) >> 8
+}
+
+#[inline]
+pub(crate) fn extract_imm12(value: u32) -> u16 {
+    // TODO: need to sign extend this?
+    ((value & 0xfff00000) >> 12) as u16
 }
 
 pub fn decode(input: &[u8]) -> Option<Instruction> {
@@ -722,10 +728,10 @@ fn parse_bz(value: u32) -> Option<Instruction> {
     let m = extract_m(value);
 
     match m {
-        0b00 => unimplemented!(), // beqz
-        0b01 => unimplemented!(), // bnez
-        0b10 => unimplemented!(), // bltz
-        0b11 => unimplemented!(), // bgez
+        0b00 => Some(Instruction::Beqz(Bri12::from(value))), // beqz
+        0b01 => Some(Instruction::Bnez(Bri12::from(value))), // bnez
+        0b10 => Some(Instruction::Bltz(Bri12::from(value))), // bltz
+        0b11 => Some(Instruction::Bgez(Bri12::from(value))), // bgez
         _ => None,
     }
 }
@@ -828,6 +834,7 @@ mod tests {
     use crate::instruction::Instruction;
     use crate::instruction::Rri8;
     use crate::instruction::Rrr;
+    use crate::instruction::Bri12;
 
     #[test]
     fn abs() {
@@ -1286,6 +1293,38 @@ mod tests {
         let data = [0x02, 0x60, 0x00];
         let decoded = decode(&data);
         let expected = Some(Instruction::S32i(Rri8::new(0, 0, 0)));
+        assert!(decoded == expected);
+    }
+
+    #[test]
+    fn beqz() {
+        let data = [0x16, 0x00, 0x00];
+        let decoded = decode(&data);
+        let expected = Some(Instruction::Beqz(Bri12::new(0, 0)));
+        assert!(decoded == expected);
+    }
+
+    #[test]
+    fn bgez() {
+        let data = [0xd6, 0x00, 0x00];
+        let decoded = decode(&data);
+        let expected = Some(Instruction::Bgez(Bri12::new(0, 0)));
+        assert!(decoded == expected);
+    }
+
+    #[test]
+    fn bltz() {
+        let data = [0x96, 0x00, 0x00];
+        let decoded = decode(&data);
+        let expected = Some(Instruction::Bltz(Bri12::new(0, 0)));
+        assert!(decoded == expected);
+    }
+
+    #[test]
+    fn bnez() {
+        let data = [0x56, 0x00, 0x00];
+        let decoded = decode(&data);
+        let expected = Some(Instruction::Bnez(Bri12::new(0, 0)));
         assert!(decoded == expected);
     }
 }
