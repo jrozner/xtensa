@@ -41,36 +41,36 @@ pub enum Instruction {
     Subx8(Rrr),
     Xor(Rrr),
     Xsr(Rrr),
-    Addi(GenericInstruction),
-    Addmi(GenericInstruction),
-    Ball(GenericInstruction),
-    Bany(GenericInstruction),
-    Bbc(GenericInstruction),
-    Bbci(GenericInstruction),
-    Bbs(GenericInstruction),
-    Bbsi(GenericInstruction),
-    Beq(GenericInstruction),
-    Beqi(GenericInstruction),
-    Bge(GenericInstruction),
-    Bgei(GenericInstruction),
-    Bgeu(GenericInstruction),
-    Bgeui(GenericInstruction),
-    Blt(GenericInstruction),
-    Blti(GenericInstruction),
-    Bltu(GenericInstruction),
-    Bltui(GenericInstruction),
-    Bnall(GenericInstruction),
-    Bne(GenericInstruction),
-    Bnei(GenericInstruction),
-    Bnone(GenericInstruction),
-    L8ui(GenericInstruction),
-    L16si(GenericInstruction),
-    L16ui(GenericInstruction),
-    L32i(GenericInstruction),
-    Movi(GenericInstruction),
-    S8i(GenericInstruction),
-    S16i(GenericInstruction),
-    S32i(GenericInstruction),
+    Addi(Rri8),
+    Addmi(Rri8),
+    Ball(Rri8),
+    Bany(Rri8),
+    Bbc(Rri8),
+    Bbci(Rri8),
+    Bbs(Rri8),
+    Bbsi(Rri8),
+    Beq(Rri8),
+    Beqi(Rri8), // TODO: this is actually BRI8
+    Bge(Rri8),
+    Bgei(Rri8), // TODO: this is actually BRI8
+    Bgeu(Rri8),
+    Bgeui(Rri8), // TODO: this is actually BRI8
+    Blt(Rri8),
+    Blti(Rri8), // TODO: this is actually BRI8
+    Bltu(Rri8),
+    Bltui(Rri8), // TODO: this is actually BRI8
+    Bnall(Rri8),
+    Bne(Rri8),
+    Bnei(Rri8), // TODO: this is actually BRI8
+    Bnone(Rri8),
+    L8ui(Rri8),
+    L16si(Rri8),
+    L16ui(Rri8),
+    L32i(Rri8),
+    Movi(Rri8),
+    S8i(Rri8),
+    S16i(Rri8),
+    S32i(Rri8),
     Beqz(GenericInstruction),
     Bgez(GenericInstruction),
     Bltz(GenericInstruction),
@@ -150,7 +150,39 @@ impl From<u32> for Rrr {
 pub struct Rri4 {}
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct Rri8 {}
+pub struct Rri8 {
+    s: u32,
+    t: u32,
+    imm8: u8,
+}
+
+impl Rri8 {
+    pub fn new(s: u32, t: u32, imm8: u8) -> Rri8 {
+        Rri8 { s, t, imm8 }
+    }
+
+    pub fn s(&self) -> u32 {
+        self.s
+    }
+
+    pub fn t(&self) -> u32 {
+        self.t
+    }
+
+    pub fn imm8(&self) -> u8 {
+        self.imm8
+    }
+}
+
+impl From<u32> for Rri8 {
+    fn from(value: u32) -> Self {
+        let s = extract_s(value);
+        let t = extract_t(value);
+        let imm8 = extract_op2(value) as u8;
+
+        Rri8 { s, t, imm8 }
+    }
+}
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Ri16 {}

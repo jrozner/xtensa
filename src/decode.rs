@@ -1,6 +1,6 @@
 use byteorder::{ByteOrder, LittleEndian};
 
-use crate::instruction::{Instruction, Rrr};
+use crate::instruction::{Instruction, Rri8, Rrr};
 
 #[inline]
 pub(crate) fn extract_op0(value: u8) -> u8 {
@@ -232,13 +232,13 @@ fn parse_st1(value: u32) -> Option<Instruction> {
         0b0000 => Some(Instruction::Ssr(Rrr::from(value))), // ssr
         0b0001 => Some(Instruction::Ssl(Rrr::from(value))), // ssl
         0b0010 => Some(Instruction::Ssa8l(Rrr::from(value))), // ssa8l
-        0b0011 => unimplemented!(), // ssa8b
+        0b0011 => unimplemented!(),                         // ssa8b
         0b0100 => Some(Instruction::Ssai(Rrr::from(value))), // ssai
-        0b0110 => unimplemented!(), // rer
-        0b0111 => unimplemented!(), // wer
-        0b1000 => unimplemented!(), // rotw
-        0b1110 => unimplemented!(), // nsa
-        0b1111 => unimplemented!(), // nsau
+        0b0110 => unimplemented!(),                         // rer
+        0b0111 => unimplemented!(),                         // wer
+        0b1000 => unimplemented!(),                         // rotw
+        0b1110 => unimplemented!(),                         // nsa
+        0b1111 => unimplemented!(),                         // nsau
         _ => None,
     }
 }
@@ -278,15 +278,15 @@ fn parse_rst1(value: u32) -> Option<Instruction> {
         0b0000 | 0b0001 => Some(Instruction::Slli(Rrr::from(value))), // slli
         0b0010 | 0b0011 => Some(Instruction::Srai(Rrr::from(value))), // srai
         0b0100 => Some(Instruction::Srli(Rrr::from(value))),          // srli
-        0b0110 => Some(Instruction::Xsr(Rrr::from(value))),          // xsr
-        0b0111 => parse_accer(value),        // accer
-        0b1000 => Some(Instruction::Src(Rrr::from(value))), // src
-        0b1001 => Some(Instruction::Srl(Rrr::from(value))),          // srl
-        0b1010 => Some(Instruction::Sll(Rrr::from(value))), // sll
-        0b1011 => Some(Instruction::Sra(Rrr::from(value))), // sra
-        0b1100 => unimplemented!(),          // mul16u
-        0b1101 => unimplemented!(),          // mul16s
-        0b1111 => parse_imp(value),          // imp
+        0b0110 => Some(Instruction::Xsr(Rrr::from(value))),           // xsr
+        0b0111 => parse_accer(value),                                 // accer
+        0b1000 => Some(Instruction::Src(Rrr::from(value))),           // src
+        0b1001 => Some(Instruction::Srl(Rrr::from(value))),           // srl
+        0b1010 => Some(Instruction::Sll(Rrr::from(value))),           // sll
+        0b1011 => Some(Instruction::Sra(Rrr::from(value))),           // sra
+        0b1100 => unimplemented!(),                                   // mul16u
+        0b1101 => unimplemented!(),                                   // mul16s
+        0b1111 => parse_imp(value),                                   // imp
         _ => None,
     }
 }
@@ -350,22 +350,22 @@ fn parse_rst3(value: u32) -> Option<Instruction> {
     let op2 = extract_op2(value);
 
     match op2 {
-        0b0000 => unimplemented!(), // rsr
-        0b0001 => unimplemented!(), // wsr
-        0b0010 => unimplemented!(), // sext
-        0b0011 => unimplemented!(), // clamps
-        0b0100 => unimplemented!(), // min
-        0b0101 => unimplemented!(), // max
-        0b0110 => unimplemented!(), // minu
-        0b0111 => unimplemented!(), // maxu
+        0b0000 => unimplemented!(),                            // rsr
+        0b0001 => unimplemented!(),                            // wsr
+        0b0010 => unimplemented!(),                            // sext
+        0b0011 => unimplemented!(),                            // clamps
+        0b0100 => unimplemented!(),                            // min
+        0b0101 => unimplemented!(),                            // max
+        0b0110 => unimplemented!(),                            // minu
+        0b0111 => unimplemented!(),                            // maxu
         0b1000 => Some(Instruction::Moveqz(Rrr::from(value))), // moveqz
-        0b1001 => unimplemented!(), // movnez
+        0b1001 => unimplemented!(),                            // movnez
         0b1010 => Some(Instruction::Movltz(Rrr::from(value))), // movltz
         0b1011 => Some(Instruction::Movgez(Rrr::from(value))), // movgez
-        0b1100 => unimplemented!(), // movf
-        0b1101 => unimplemented!(), // movt
-        0b1110 => unimplemented!(), // rur
-        0b1111 => unimplemented!(), // wur
+        0b1100 => unimplemented!(),                            // movf
+        0b1101 => unimplemented!(),                            // movt
+        0b1110 => unimplemented!(),                            // rur
+        0b1111 => unimplemented!(),                            // wur
         _ => None,
     }
 }
@@ -451,20 +451,20 @@ fn parse_lsai(value: u32) -> Option<Instruction> {
     let r = extract_r(value);
 
     match r {
-        0b0000 => unimplemented!(),   // l8ui
-        0b0001 => unimplemented!(),   // l16ui
-        0b0010 => unimplemented!(),   // l32i
-        0b0100 => unimplemented!(),   // s8i
-        0b0101 => unimplemented!(),   // s16i
-        0b0110 => unimplemented!(),   // s32i
-        0b0111 => parse_cache(value), // cache
-        0b1001 => unimplemented!(),   // l16si
-        0b1010 => unimplemented!(),   // movi
-        0b1011 => unimplemented!(),   // l32ai
-        0b1100 => unimplemented!(),   // addi
-        0b1101 => unimplemented!(),   // addmi
-        0b1110 => unimplemented!(),   // s32c1i
-        0b1111 => unimplemented!(),   // s32ri
+        0b0000 => Some(Instruction::L8ui(Rri8::from(value))), // l8ui
+        0b0001 => Some(Instruction::L16ui(Rri8::from(value))), // l16ui
+        0b0010 => Some(Instruction::L32i(Rri8::from(value))), // l32i
+        0b0100 => Some(Instruction::S8i(Rri8::from(value))),  // s8i
+        0b0101 => Some(Instruction::S16i(Rri8::from(value))), // s16i
+        0b0110 => Some(Instruction::S32i(Rri8::from(value))), // s32i
+        0b0111 => parse_cache(value),                         // cache
+        0b1001 => Some(Instruction::L16si(Rri8::from(value))), // l16si
+        0b1010 => unimplemented!(),                           // movi
+        0b1011 => unimplemented!(),                           // l32ai
+        0b1100 => Some(Instruction::Addi(Rri8::from(value))), // addi
+        0b1101 => Some(Instruction::Addmi(Rri8::from(value))), // addmi
+        0b1110 => unimplemented!(),                           // s32c1i
+        0b1111 => unimplemented!(),                           // s32ri
         _ => None,
     }
 }
@@ -771,20 +771,20 @@ fn parse_b(value: u32) -> Option<Instruction> {
     let r = extract_r(value);
 
     match r {
-        0b0000 => unimplemented!(),          // bnone
-        0b0001 => unimplemented!(),          // beq
-        0b0010 => unimplemented!(),          // blt
-        0b0011 => unimplemented!(),          // bltu
-        0b0100 => unimplemented!(),          // ball
-        0b0101 => unimplemented!(),          // bbc
-        0b0110 | 0b111 => unimplemented!(),  // bbci
-        0b1000 => unimplemented!(),          // bany
-        0b1001 => unimplemented!(),          // bne
-        0b1010 => unimplemented!(),          // bge
-        0b1011 => unimplemented!(),          // bgeu
-        0b1100 => unimplemented!(),          // bnall
-        0b1101 => unimplemented!(),          // bbs
-        0b1110 | 0b1111 => unimplemented!(), // bbsi
+        0b0000 => Some(Instruction::Bnone(Rri8::from(value))), // bnone
+        0b0001 => Some(Instruction::Beq(Rri8::from(value))),   // beq
+        0b0010 => Some(Instruction::Blt(Rri8::from(value))),   // blt
+        0b0011 => Some(Instruction::Bltu(Rri8::from(value))),  // bltu
+        0b0100 => Some(Instruction::Ball(Rri8::from(value))),  // ball
+        0b0101 => Some(Instruction::Bbc(Rri8::from(value))),   // bbc
+        0b0110 | 0b0111 => unimplemented!(),                   // bbci
+        0b1000 => Some(Instruction::Bany(Rri8::from(value))),  // bany
+        0b1001 => Some(Instruction::Bne(Rri8::from(value))),   // bne
+        0b1010 => Some(Instruction::Bge(Rri8::from(value))),   // bge
+        0b1011 => Some(Instruction::Bgeu(Rri8::from(value))),  // bgeu
+        0b1100 => Some(Instruction::Bnall(Rri8::from(value))), // bnall
+        0b1101 => Some(Instruction::Bbs(Rri8::from(value))),   // bbs
+        0b1110 | 0b1111 => unimplemented!(),                   // bbsi
         _ => None,
     }
 }
@@ -826,6 +826,7 @@ fn parse_s3(value: u32) -> Option<Instruction> {
 mod tests {
     use crate::decode::decode;
     use crate::instruction::Instruction;
+    use crate::instruction::Rri8;
     use crate::instruction::Rrr;
 
     #[test]
@@ -1111,6 +1112,180 @@ mod tests {
         let data = [0x00, 0x00, 0x61];
         let decoded = decode(&data);
         let expected = Some(Instruction::Xsr(Rrr::new(0, 0, 0)));
+        assert!(decoded == expected);
+    }
+
+    #[test]
+    fn addi() {
+        let data = [0x02, 0xc0, 0x00];
+        let decoded = decode(&data);
+        let expected = Some(Instruction::Addi(Rri8::new(0, 0, 0)));
+        assert!(decoded == expected);
+    }
+
+    #[test]
+    fn addmi() {
+        let data = [0x02, 0xd0, 0x00];
+        let decoded = decode(&data);
+        let expected = Some(Instruction::Addmi(Rri8::new(0, 0, 0)));
+        assert!(decoded == expected);
+    }
+
+    #[test]
+    fn ball() {
+        let data = [0x07, 0x40, 0x00];
+        let decoded = decode(&data);
+        let expected = Some(Instruction::Ball(Rri8::new(0, 0, 0)));
+        assert!(decoded == expected);
+    }
+
+    #[test]
+    fn bany() {
+        let data = [0x07, 0x80, 0x00];
+        let decoded = decode(&data);
+        let expected = Some(Instruction::Bany(Rri8::new(0, 0, 0)));
+        assert!(decoded == expected);
+    }
+
+    #[test]
+    fn bbc() {
+        let data = [0x07, 0x50, 0x00];
+        let decoded = decode(&data);
+        let expected = Some(Instruction::Bbc(Rri8::new(0, 0, 0)));
+        assert!(decoded == expected);
+    }
+
+    // TODO: bbci (additional bitfields)
+
+    #[test]
+    fn bbs() {
+        let data = [0x07, 0xd0, 0x00];
+        let decoded = decode(&data);
+        let expected = Some(Instruction::Bbs(Rri8::new(0, 0, 0)));
+        assert!(decoded == expected);
+    }
+
+    // TODO: bbsi (additional bitfields)
+
+    #[test]
+    fn beq() {
+        let data = [0x07, 0x10, 0x00];
+        let decoded = decode(&data);
+        let expected = Some(Instruction::Beq(Rri8::new(0, 0, 0)));
+        assert!(decoded == expected);
+    }
+
+    #[test]
+    fn bge() {
+        let data = [0x07, 0xa0, 0x00];
+        let decoded = decode(&data);
+        let expected = Some(Instruction::Bge(Rri8::new(0, 0, 0)));
+        assert!(decoded == expected);
+    }
+
+    #[test]
+    fn bgeu() {
+        let data = [0x07, 0xb0, 0x00];
+        let decoded = decode(&data);
+        let expected = Some(Instruction::Bgeu(Rri8::new(0, 0, 0)));
+        assert!(decoded == expected);
+    }
+
+    #[test]
+    fn blt() {
+        let data = [0x07, 0x20, 0x00];
+        let decoded = decode(&data);
+        let expected = Some(Instruction::Blt(Rri8::new(0, 0, 0)));
+        assert!(decoded == expected);
+    }
+
+    #[test]
+    fn bltu() {
+        let data = [0x07, 0x30, 0x00];
+        let decoded = decode(&data);
+        let expected = Some(Instruction::Bltu(Rri8::new(0, 0, 0)));
+        assert!(decoded == expected);
+    }
+
+    #[test]
+    fn bnall() {
+        let data = [0x07, 0xc0, 0x00];
+        let decoded = decode(&data);
+        let expected = Some(Instruction::Bnall(Rri8::new(0, 0, 0)));
+        assert!(decoded == expected);
+    }
+
+    #[test]
+    fn bne() {
+        let data = [0x07, 0x90, 0x00];
+        let decoded = decode(&data);
+        let expected = Some(Instruction::Bne(Rri8::new(0, 0, 0)));
+        assert!(decoded == expected);
+    }
+
+    #[test]
+    fn bnone() {
+        let data = [0x07, 0x00, 0x00];
+        let decoded = decode(&data);
+        let expected = Some(Instruction::Bnone(Rri8::new(0, 0, 0)));
+        assert!(decoded == expected);
+    }
+
+    #[test]
+    fn l8ui() {
+        let data = [0x02, 0x00, 0x00];
+        let decoded = decode(&data);
+        let expected = Some(Instruction::L8ui(Rri8::new(0, 0, 0)));
+        assert!(decoded == expected);
+    }
+
+    #[test]
+    fn l16si() {
+        let data = [0x02, 0x90, 0x00];
+        let decoded = decode(&data);
+        let expected = Some(Instruction::L16si(Rri8::new(0, 0, 0)));
+        assert!(decoded == expected);
+    }
+
+    #[test]
+    fn l16ui() {
+        let data = [0x02, 0x10, 0x00];
+        let decoded = decode(&data);
+        let expected = Some(Instruction::L16ui(Rri8::new(0, 0, 0)));
+        assert!(decoded == expected);
+    }
+
+    #[test]
+    fn l32i() {
+        let data = [0x02, 0x20, 0x00];
+        let decoded = decode(&data);
+        let expected = Some(Instruction::L32i(Rri8::new(0, 0, 0)));
+        assert!(decoded == expected);
+    }
+
+    // TODO: movi is imm12?
+
+    #[test]
+    fn s8i() {
+        let data = [0x02, 0x40, 0x00];
+        let decoded = decode(&data);
+        let expected = Some(Instruction::S8i(Rri8::new(0, 0, 0)));
+        assert!(decoded == expected);
+    }
+
+    #[test]
+    fn s16i() {
+        let data = [0x02, 0x50, 0x00];
+        let decoded = decode(&data);
+        let expected = Some(Instruction::S16i(Rri8::new(0, 0, 0)));
+        assert!(decoded == expected);
+    }
+
+    #[test]
+    fn s32i() {
+        let data = [0x02, 0x60, 0x00];
+        let decoded = decode(&data);
+        let expected = Some(Instruction::S32i(Rri8::new(0, 0, 0)));
         assert!(decoded == expected);
     }
 }
